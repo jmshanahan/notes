@@ -1,5 +1,5 @@
 import { port, debug, dbgerror } from './app.mjs';
-
+import { NotesStore } from './models/notes-store.mjs';
 /**
  * Normalize a port into a number, string, or false.
  */
@@ -94,3 +94,16 @@ import * as util from 'util';
 process.on('unhandledRejection', (reason, p) => {
     console.error(`Unhandled Rejection at: ${util.inspect(p)} reason: ${reason}`);
 })
+
+
+async function catchProcessDeath() {
+    debug('urk...');
+    await NotesStore.close();
+    await server.close();
+    process.exit(0);
+}
+process.on('SIGTERM', catchProcessDeath);
+process.on('SIGINT', catchProcessDeath);
+process.on('SIGHUP', catchProcessDeath);
+process.on('exit', () => { debug('exiting...'); });
+
